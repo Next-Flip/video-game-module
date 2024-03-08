@@ -374,6 +374,15 @@ static bool expansion_get_rgb_info() {
     rpc_message.command_status = PB_CommandStatus_OK;
     rpc_message.which_content = PB_Main_system_device_info_request_tag;
 
+    uint8_t color_mode = 0;
+
+    uint32_t led_rgb_0 = 0;
+    uint32_t led_rgb_1 = 0;
+    uint32_t led_rgb_2 = 0;
+
+    uint16_t vgm_fg = 0xFC00;
+    uint16_t vgm_bg = 0x0000;
+
     do {
         if(!expansion_send_rpc_message(&rpc_message)) break;
         PB_System_DeviceInfoResponse* response = &rpc_message.content.system_device_info_response;
@@ -381,17 +390,43 @@ static bool expansion_get_rgb_info() {
             if(!expansion_receive_rpc_message(&rpc_message)) break;
             if(!expansion_is_system_device_info_rpc_response(&rpc_message)) break;
 
-            if(strcmp(response->key, "hardware_rgb_led_0") != 0) continue;
+            if(strcmp(response->key, "hardware_vgm_color_mode") == 0)
+                color_mode = strtol(response->value, NULL, 10);
 
-            uint32_t rgb = (uint32_t)strtol(response->value, NULL, 16);
-            uint16_t rgb565 = (uint16_t)((rgb & 0xF80000) >> 8) +
-                              (uint16_t)((rgb & 0x00FC00) >> 5) +
-                              (uint16_t)((rgb & 0x0000F8) >> 3);
-            frame_set_color(rgb565, 0x0000);
+            if(strcmp(response->key, "hardware_rgb_led_0") == 0)
+                led_rgb_0 = (uint32_t)strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_rgb_led_1") == 0)
+                led_rgb_1 = (uint32_t)strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_rgb_led_2") == 0)
+                led_rgb_2 = (uint32_t)strtol(response->value, NULL, 16);
+
+            if(strcmp(response->key, "hardware_vgm_color_fb") == 0)
+                vgm_fg = strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_vgm_color_bg") == 0)
+                vgm_bg = strtol(response->value, NULL, 16);
 
         } while(rpc_message.has_next);
 
         if(rpc_message.has_next) break;
+
+        switch(color_mode) {
+        case 2:
+            vgm_fg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_2 & 0x0000F8) >> 3);
+            vgm_fg = (uint16_t)((led_rgb_1 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_1 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_1 & 0x0000F8) >> 3);
+            vgm_fg = (uint16_t)((led_rgb_0 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_0 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_0 & 0x0000F8) >> 3);
+            vgm_bg = 0x0000;
+            break;
+        default:
+            break;
+        }
+
+        frame_set_color(vgm_fg, vgm_bg);
 
         success = true;
     } while(false);
