@@ -393,14 +393,14 @@ static bool expansion_get_rgb_info() {
             if(strcmp(response->key, "hardware_vgm_color_mode") == 0)
                 color_mode = strtol(response->value, NULL, 10);
 
-            if(strcmp(response->key, "hardware_rgb_led_0") == 0)
+            if(strcmp(response->key, "hardware_screen_rgb_led0") == 0)
                 led_rgb_0 = (uint32_t)strtol(response->value, NULL, 16);
-            if(strcmp(response->key, "hardware_rgb_led_1") == 0)
+            if(strcmp(response->key, "hardware_screen_rgb_led1") == 0)
                 led_rgb_1 = (uint32_t)strtol(response->value, NULL, 16);
-            if(strcmp(response->key, "hardware_rgb_led_2") == 0)
+            if(strcmp(response->key, "hardware_screen_rgb_led2") == 0)
                 led_rgb_2 = (uint32_t)strtol(response->value, NULL, 16);
 
-            if(strcmp(response->key, "hardware_vgm_color_fb") == 0)
+            if(strcmp(response->key, "hardware_vgm_color_fg") == 0)
                 vgm_fg = strtol(response->value, NULL, 16);
             if(strcmp(response->key, "hardware_vgm_color_bg") == 0)
                 vgm_bg = strtol(response->value, NULL, 16);
@@ -410,6 +410,10 @@ static bool expansion_get_rgb_info() {
         if(rpc_message.has_next) break;
 
         switch(color_mode) {
+        case 0:
+            vgm_fg = 0xFC00;
+            vgm_bg = 0x0000;
+            break;
         case 2:
             vgm_fg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
                      (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
