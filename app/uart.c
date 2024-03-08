@@ -268,6 +268,11 @@ static inline bool expansion_is_screen_frame_rpc_response(const PB_Main* message
            message->which_content == PB_Main_gui_screen_frame_tag;
 }
 
+static inline bool expansion_is_system_device_info_rpc_response(const PB_Main* message) {
+    return message->command_status == PB_CommandStatus_OK &&
+           message->which_content == PB_Main_system_device_info_response_tag;
+}
+
 // Main states
 
 static bool expansion_wait_ready() {
@@ -355,6 +360,78 @@ static bool expansion_start_virtual_display() {
             pdMS_TO_TICKS(EXPANSION_MODULE_TIMEOUT_MS));
 
         free(frame_buffer);
+        success = true;
+    } while(false);
+
+    pb_release(&PB_Main_msg, &rpc_message);
+    return success;
+}
+
+static bool expansion_get_rgb_info() {
+    bool success = false;
+
+    rpc_message.command_id = expansion_get_next_command_id();
+    rpc_message.command_status = PB_CommandStatus_OK;
+    rpc_message.which_content = PB_Main_system_device_info_request_tag;
+
+    uint8_t color_mode = 0;
+
+    uint32_t led_rgb_0 = 0;
+    uint32_t led_rgb_1 = 0;
+    uint32_t led_rgb_2 = 0;
+
+    uint16_t vgm_bg = 0xFC00;
+    uint16_t vgm_fg = 0x0000;
+
+    do {
+        if(!expansion_send_rpc_message(&rpc_message)) break;
+        PB_System_DeviceInfoResponse* response = &rpc_message.content.system_device_info_response;
+        do {
+            if(!expansion_receive_rpc_message(&rpc_message)) break;
+            if(!expansion_is_system_device_info_rpc_response(&rpc_message)) break;
+
+            if(strcmp(response->key, "hardware_vgm_color_mode") == 0)
+                color_mode = strtol(response->value, NULL, 10);
+
+            if(strcmp(response->key, "hardware_screen_rgb_led0") == 0)
+                led_rgb_0 = (uint32_t)strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_screen_rgb_led1") == 0)
+                led_rgb_1 = (uint32_t)strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_screen_rgb_led2") == 0)
+                led_rgb_2 = (uint32_t)strtol(response->value, NULL, 16);
+
+            if(strcmp(response->key, "hardware_vgm_color_fg") == 0)
+                vgm_fg = strtol(response->value, NULL, 16);
+            if(strcmp(response->key, "hardware_vgm_color_bg") == 0)
+                vgm_bg = strtol(response->value, NULL, 16);
+
+        } while(rpc_message.has_next);
+
+        if(rpc_message.has_next) break;
+
+        switch(color_mode) {
+        case 0:
+            vgm_bg = 0xFC00;
+            vgm_fg = 0x0000;
+            break;
+        case 2:
+            vgm_bg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_2 & 0x0000F8) >> 3);
+            vgm_bg = (uint16_t)((led_rgb_1 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_1 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_1 & 0x0000F8) >> 3);
+            vgm_bg = (uint16_t)((led_rgb_0 & 0xF80000) >> 8) +
+                     (uint16_t)((led_rgb_0 & 0x00FC00) >> 5) +
+                     (uint16_t)((led_rgb_0 & 0x0000F8) >> 3);
+            vgm_fg = 0x0000;
+            break;
+        default:
+            break;
+        }
+
+        frame_set_color(vgm_bg, vgm_fg);
+
         success = true;
     } while(false);
 
@@ -492,6 +569,9 @@ static void uart_task(void* unused_arg) {
         if(!expansion_handshake()) continue;
         // start rpc
         if(!expansion_start_rpc()) continue;
+
+        // get rgb info
+        if(!expansion_get_rgb_info()) continue;
 
         // leds: activate active state
         led_state_active();
