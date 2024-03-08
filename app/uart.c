@@ -380,8 +380,8 @@ static bool expansion_get_rgb_info() {
     uint32_t led_rgb_1 = 0;
     uint32_t led_rgb_2 = 0;
 
-    uint16_t vgm_fg = 0xFC00;
-    uint16_t vgm_bg = 0x0000;
+    uint16_t vgm_bg = 0xFC00;
+    uint16_t vgm_fg = 0x0000;
 
     do {
         if(!expansion_send_rpc_message(&rpc_message)) break;
@@ -411,26 +411,26 @@ static bool expansion_get_rgb_info() {
 
         switch(color_mode) {
         case 0:
-            vgm_fg = 0xFC00;
-            vgm_bg = 0x0000;
+            vgm_bg = 0xFC00;
+            vgm_fg = 0x0000;
             break;
         case 2:
-            vgm_fg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
+            vgm_bg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
                      (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
                      (uint16_t)((led_rgb_2 & 0x0000F8) >> 3);
-            vgm_fg = (uint16_t)((led_rgb_1 & 0xF80000) >> 8) +
+            vgm_bg = (uint16_t)((led_rgb_1 & 0xF80000) >> 8) +
                      (uint16_t)((led_rgb_1 & 0x00FC00) >> 5) +
                      (uint16_t)((led_rgb_1 & 0x0000F8) >> 3);
-            vgm_fg = (uint16_t)((led_rgb_0 & 0xF80000) >> 8) +
+            vgm_bg = (uint16_t)((led_rgb_0 & 0xF80000) >> 8) +
                      (uint16_t)((led_rgb_0 & 0x00FC00) >> 5) +
                      (uint16_t)((led_rgb_0 & 0x0000F8) >> 3);
-            vgm_bg = 0x0000;
+            vgm_fg = 0x0000;
             break;
         default:
             break;
         }
 
-        frame_set_color(vgm_fg, vgm_bg);
+        frame_set_color(vgm_bg, vgm_fg);
 
         success = true;
     } while(false);
