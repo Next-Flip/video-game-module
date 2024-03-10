@@ -16,6 +16,7 @@
 #include "led_state.h"
 #include "bitmaps.h"
 #include "expansion_protocol.h"
+#include "rgb.h"
 
 #define UART_ID uart0
 #define UART_IRQ UART0_IRQ
@@ -374,7 +375,7 @@ static bool expansion_get_rgb_info() {
     rpc_message.command_status = PB_CommandStatus_OK;
     rpc_message.which_content = PB_Main_system_device_info_request_tag;
 
-    uint8_t color_mode = 0;
+    VgmColorMode color_mode = VgmColorModeDefault;
 
     uint32_t led_rgb_0 = 0;
     uint32_t led_rgb_1 = 0;
@@ -391,14 +392,14 @@ static bool expansion_get_rgb_info() {
             if(!expansion_is_system_device_info_rpc_response(&rpc_message)) break;
 
             if(strcmp(response->key, "hardware_vgm_color_mode") == 0)
-                color_mode = strtol(response->value, NULL, 10);
+                color_mode = (VgmColorMode)strtol(response->value, NULL, 10);
 
             if(strcmp(response->key, "hardware_screen_rgb_led0") == 0)
-                led_rgb_0 = (uint32_t)strtol(response->value, NULL, 16);
+                led_rgb_0 = strtol(response->value, NULL, 16);
             if(strcmp(response->key, "hardware_screen_rgb_led1") == 0)
-                led_rgb_1 = (uint32_t)strtol(response->value, NULL, 16);
+                led_rgb_1 = strtol(response->value, NULL, 16);
             if(strcmp(response->key, "hardware_screen_rgb_led2") == 0)
-                led_rgb_2 = (uint32_t)strtol(response->value, NULL, 16);
+                led_rgb_2 = strtol(response->value, NULL, 16);
 
             if(strcmp(response->key, "hardware_vgm_color_fg") == 0)
                 vgm_fg = strtol(response->value, NULL, 16);
@@ -410,11 +411,15 @@ static bool expansion_get_rgb_info() {
         if(rpc_message.has_next) break;
 
         switch(color_mode) {
-        case 0:
+        case VgmColorModeDefault:
             vgm_bg = 0xFC00;
             vgm_fg = 0x0000;
+            stop_rainbow_mode();
             break;
-        case 2:
+        case VgmColorModeRainbow:
+            start_rainbow_mode();
+            break;
+        case VgmColorModeRgbBacklight:
             vgm_bg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
                      (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
                      (uint16_t)((led_rgb_2 & 0x0000F8) >> 3);
@@ -425,8 +430,10 @@ static bool expansion_get_rgb_info() {
                      (uint16_t)((led_rgb_0 & 0x00FC00) >> 5) +
                      (uint16_t)((led_rgb_0 & 0x0000F8) >> 3);
             vgm_fg = 0x0000;
+            stop_rainbow_mode();
             break;
         default:
+            stop_rainbow_mode();
             break;
         }
 
