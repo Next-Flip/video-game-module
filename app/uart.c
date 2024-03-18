@@ -515,6 +515,10 @@ static void expansion_process_screen_streaming() {
         const PB_Gui_ScreenOrientation orientation =
             rpc_message.content.gui_screen_frame.orientation;
         const pb_byte_t* data = rpc_message.content.gui_screen_frame.data->bytes;
+        const RgbColor bg = {rpc_message.content.gui_screen_frame.bg_color};
+        const RgbColor fg = {rpc_message.content.gui_screen_frame.fg_color};
+
+        frame_set_color(rgb888_to_rgb565(bg), rgb888_to_rgb565(fg));
 
         frame_parse_data(
             orientation, (const frame_t*)data, pdMS_TO_TICKS(EXPANSION_MODULE_TIMEOUT_MS));
@@ -578,7 +582,7 @@ static void uart_task(void* unused_arg) {
         if(!expansion_start_rpc()) continue;
 
         // get rgb info
-        if(!expansion_get_rgb_info()) continue;
+        // if(!expansion_get_rgb_info()) continue;
 
         // leds: activate active state
         led_state_active();

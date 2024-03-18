@@ -69,6 +69,11 @@ void RainbowBackgroundColorCyclerTask(void* pvParameters) {
     }
 }
 
+uint16_t rgb888_to_rgb565(RgbColor rgb) {
+    return (((uint16_t)rgb.r & 0xF8) << 8) + (((uint16_t)rgb.g & 0xFC) << 3) +
+           ((rgb.b & 0xF8) >> 3);
+}
+
 void start_rainbow_mode() {
     if(rgb_handle) {
         vTaskResume(rgb_handle);
