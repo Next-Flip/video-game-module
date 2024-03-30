@@ -19,6 +19,14 @@ typedef union __attribute__((packed)) {
 } RgbColor;
 
 typedef union __attribute__((packed)) {
+    uint32_t value;
+    struct {
+        VgmColorMode mode : 8;
+        RgbColor rgb;
+    };
+} RgbColorTransmit;
+
+typedef union __attribute__((packed)) {
     uint32_t value : 24;
     struct {
         uint8_t h;

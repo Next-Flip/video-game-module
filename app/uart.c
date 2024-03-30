@@ -515,10 +515,15 @@ static void expansion_process_screen_streaming() {
         const PB_Gui_ScreenOrientation orientation =
             rpc_message.content.gui_screen_frame.orientation;
         const pb_byte_t* data = rpc_message.content.gui_screen_frame.data->bytes;
-        const RgbColor bg = {rpc_message.content.gui_screen_frame.bg_color};
-        const RgbColor fg = {rpc_message.content.gui_screen_frame.fg_color};
+        const RgbColorTransmit bg = {rpc_message.content.gui_screen_frame.bg_color};
+        const RgbColorTransmit fg = {rpc_message.content.gui_screen_frame.fg_color};
 
-        frame_set_color(rgb888_to_rgb565(bg), rgb888_to_rgb565(fg));
+        if(bg.mode == VgmColorModeRainbow) {
+            start_rainbow_mode();
+        } else {
+            stop_rainbow_mode();
+            frame_set_color(rgb888_to_rgb565(bg.rgb), rgb888_to_rgb565(fg.rgb));
+        }
 
         frame_parse_data(
             orientation, (const frame_t*)data, pdMS_TO_TICKS(EXPANSION_MODULE_TIMEOUT_MS));
