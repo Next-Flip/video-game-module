@@ -368,84 +368,6 @@ static bool expansion_start_virtual_display() {
     return success;
 }
 
-static bool expansion_get_rgb_info() {
-    bool success = false;
-
-    rpc_message.command_id = expansion_get_next_command_id();
-    rpc_message.command_status = PB_CommandStatus_OK;
-    rpc_message.which_content = PB_Main_system_device_info_request_tag;
-
-    VgmColorMode color_mode = VgmColorModeDefault;
-
-    uint32_t led_rgb_0 = 0;
-    uint32_t led_rgb_1 = 0;
-    uint32_t led_rgb_2 = 0;
-
-    uint16_t vgm_bg = 0xFC00;
-    uint16_t vgm_fg = 0x0000;
-
-    do {
-        if(!expansion_send_rpc_message(&rpc_message)) break;
-        PB_System_DeviceInfoResponse* response = &rpc_message.content.system_device_info_response;
-        do {
-            if(!expansion_receive_rpc_message(&rpc_message)) break;
-            if(!expansion_is_system_device_info_rpc_response(&rpc_message)) break;
-
-            if(strcmp(response->key, "hardware_vgm_color_mode") == 0)
-                color_mode = (VgmColorMode)strtol(response->value, NULL, 10);
-
-            if(strcmp(response->key, "hardware_screen_rgb_led0") == 0)
-                led_rgb_0 = strtol(response->value, NULL, 16);
-            if(strcmp(response->key, "hardware_screen_rgb_led1") == 0)
-                led_rgb_1 = strtol(response->value, NULL, 16);
-            if(strcmp(response->key, "hardware_screen_rgb_led2") == 0)
-                led_rgb_2 = strtol(response->value, NULL, 16);
-
-            if(strcmp(response->key, "hardware_vgm_color_fg") == 0)
-                vgm_fg = strtol(response->value, NULL, 16);
-            if(strcmp(response->key, "hardware_vgm_color_bg") == 0)
-                vgm_bg = strtol(response->value, NULL, 16);
-
-        } while(rpc_message.has_next);
-
-        if(rpc_message.has_next) break;
-
-        switch(color_mode) {
-        case VgmColorModeDefault:
-            vgm_bg = 0xFC00;
-            vgm_fg = 0x0000;
-            stop_rainbow_mode();
-            break;
-        case VgmColorModeRainbow:
-            start_rainbow_mode();
-            break;
-        case VgmColorModeRgbBacklight:
-            vgm_bg = (uint16_t)((led_rgb_2 & 0xF80000) >> 8) +
-                     (uint16_t)((led_rgb_2 & 0x00FC00) >> 5) +
-                     (uint16_t)((led_rgb_2 & 0x0000F8) >> 3);
-            vgm_bg = (uint16_t)((led_rgb_1 & 0xF80000) >> 8) +
-                     (uint16_t)((led_rgb_1 & 0x00FC00) >> 5) +
-                     (uint16_t)((led_rgb_1 & 0x0000F8) >> 3);
-            vgm_bg = (uint16_t)((led_rgb_0 & 0xF80000) >> 8) +
-                     (uint16_t)((led_rgb_0 & 0x00FC00) >> 5) +
-                     (uint16_t)((led_rgb_0 & 0x0000F8) >> 3);
-            vgm_fg = 0x0000;
-            stop_rainbow_mode();
-            break;
-        default:
-            stop_rainbow_mode();
-            break;
-        }
-
-        frame_set_color(vgm_bg, vgm_fg);
-
-        success = true;
-    } while(false);
-
-    pb_release(&PB_Main_msg, &rpc_message);
-    return success;
-}
-
 static bool expansion_wait_input() {
     bool success = false;
 
@@ -519,10 +441,17 @@ static void expansion_process_screen_streaming() {
         const RgbColorTransmit fg = {rpc_message.content.gui_screen_frame.fg_color};
 
         if(bg.mode == VgmColorModeRainbow) {
-            start_rainbow_mode();
+            start_rainbow_mode(&bg_state);
         } else {
-            stop_rainbow_mode();
-            frame_set_color(rgb888_to_rgb565(bg.rgb), rgb888_to_rgb565(fg.rgb));
+            stop_rainbow_mode(&bg_state);
+            frame_set_background(rgb888_to_rgb565(bg.rgb));
+        }
+
+        if(fg.mode == VgmColorModeRainbow) {
+            start_rainbow_mode(&fg_state);
+        } else {
+            stop_rainbow_mode(&fg_state);
+            frame_set_foreground(rgb888_to_rgb565(fg.rgb));
         }
 
         frame_parse_data(
@@ -585,9 +514,6 @@ static void uart_task(void* unused_arg) {
         if(!expansion_handshake()) continue;
         // start rpc
         if(!expansion_start_rpc()) continue;
-
-        // get rgb info
-        // if(!expansion_get_rgb_info()) continue;
 
         // leds: activate active state
         led_state_active();

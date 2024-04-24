@@ -165,3 +165,11 @@ void frame_set_color(uint16_t bg, uint16_t fg) {
     color_bg = bg;
     color_fg = fg;
 }
+
+void frame_set_background(uint16_t bg) {
+    color_bg = bg;
+}
+
+void frame_set_foreground(uint16_t fg) {
+    color_fg = fg;
+}

@@ -21,3 +21,5 @@ typedef enum {
 void frame_parse_data(uint8_t orientation, const frame_t* frame, uint32_t timeout_ms);
 
 void frame_set_color(uint16_t bg, uint16_t fg);
+void frame_set_background(uint16_t bg);
+void frame_set_foreground(uint16_t fg);

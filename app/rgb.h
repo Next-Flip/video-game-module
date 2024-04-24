@@ -1,5 +1,9 @@
 #pragma once
 #include <pico/stdlib.h>
+#include <FreeRTOS.h>
+#include <task.h>
+
+#include "frame.h"
 
 typedef enum {
     VgmColorModeDefault,
@@ -44,8 +48,32 @@ typedef union __attribute__((packed)) {
     };
 } Rgb565Color;
 
+typedef struct {
+    TaskHandle_t thread;
+    size_t current_color_index;
+    uint8_t totalSteps;
+    uint8_t currentStep;
+    void (*set_color)(uint16_t color);
+} state;
+
+static state bg_state = {
+    .thread = NULL,
+    .current_color_index = 0,
+    .totalSteps = 20,
+    .currentStep = 0,
+    .set_color = &frame_set_background,
+};
+
+static state fg_state = {
+    .thread = NULL,
+    .current_color_index = 0,
+    .totalSteps = 20,
+    .currentStep = 0,
+    .set_color = &frame_set_foreground,
+};
+
 uint16_t rgb888_to_rgb565(RgbColor rgb);
 
-void start_rainbow_mode();
+void start_rainbow_mode(state* s);
 
-void stop_rainbow_mode();
+void stop_rainbow_mode(state* s);
