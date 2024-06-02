@@ -34,7 +34,7 @@ uint16_t
 }
 
 // Modified function to cycle through the rainbow colors for the background with smooth transitions
-void cycle_rainbow_background_colors_smooth(state* s) {
+void cycle_rainbow_background_colors_smooth(State* s) {
     uint16_t currentColor = rainbow_colors[s->current_color_index];
     uint16_t nextColor = rainbow_colors[(s->current_color_index + 1) % rainbow_colors_count];
 
@@ -64,7 +64,7 @@ uint16_t rgb888_to_rgb565(RgbColor rgb) {
            ((rgb.b & 0xF8) >> 3);
 }
 
-void start_rainbow_mode(state* s) {
+void start_rainbow_mode(State* s) {
     if(s->thread) {
         vTaskResume(s->thread);
         return;
@@ -73,7 +73,7 @@ void start_rainbow_mode(state* s) {
         RainbowBackgroundColorCyclerTask, "RainbowBackgroundColorCycler", 256, s, 1, &s->thread);
 }
 
-void stop_rainbow_mode(state* s) {
+void stop_rainbow_mode(State* s) {
     if(s->thread == NULL) return;
     vTaskSuspend(s->thread);
 }

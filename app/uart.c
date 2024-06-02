@@ -432,17 +432,17 @@ static void expansion_process_screen_streaming() {
         const PB_Gui_ScreenOrientation orientation =
             rpc_message.content.gui_screen_frame.orientation;
         const pb_byte_t* data = rpc_message.content.gui_screen_frame.data->bytes;
-        const RgbColorTransmit bg = {rpc_message.content.gui_screen_frame.bg_color};
-        const RgbColorTransmit fg = {rpc_message.content.gui_screen_frame.fg_color};
+        const ScreenFrameColor bg = {.value = rpc_message.content.gui_screen_frame.bg_color};
+        const ScreenFrameColor fg = {.value = rpc_message.content.gui_screen_frame.fg_color};
 
-        if(bg.mode == VgmColorModeRainbow) {
+        if(bg.mode == ScreenColorModeRainbow) {
             start_rainbow_mode(&bg_state);
         } else {
             stop_rainbow_mode(&bg_state);
             frame_set_background(rgb888_to_rgb565(bg.rgb));
         }
 
-        if(fg.mode == VgmColorModeRainbow) {
+        if(fg.mode == ScreenColorModeRainbow) {
             start_rainbow_mode(&fg_state);
         } else {
             stop_rainbow_mode(&fg_state);
