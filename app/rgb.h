@@ -56,21 +56,9 @@ typedef struct {
     void (*set_color)(uint16_t color);
 } State;
 
-static State bg_state = {
-    .thread = NULL,
-    .current_color_index = 0,
-    .totalSteps = 20,
-    .currentStep = 0,
-    .set_color = &frame_set_background,
-};
+extern State bg_state;
 
-static State fg_state = {
-    .thread = NULL,
-    .current_color_index = 0,
-    .totalSteps = 20,
-    .currentStep = 0,
-    .set_color = &frame_set_foreground,
-};
+extern State fg_state;
 
 uint16_t rgb888_to_rgb565(RgbColor rgb);
 

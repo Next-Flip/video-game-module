@@ -1,5 +1,21 @@
 #include "rgb.h"
 
+State bg_state = {
+    .thread = NULL,
+    .current_color_index = 0,
+    .totalSteps = 20,
+    .currentStep = 0,
+    .set_color = &frame_set_background,
+};
+
+State fg_state = {
+    .thread = NULL,
+    .current_color_index = 0,
+    .totalSteps = 20,
+    .currentStep = 0,
+    .set_color = &frame_set_foreground,
+};
+
 // Define rainbow colors in RGB565 format
 static const uint16_t rainbow_colors[] = {
     0xF800, // Red
