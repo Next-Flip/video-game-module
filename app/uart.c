@@ -269,11 +269,6 @@ static inline bool expansion_is_screen_frame_rpc_response(const PB_Main* message
            message->which_content == PB_Main_gui_screen_frame_tag;
 }
 
-static inline bool expansion_is_system_device_info_rpc_response(const PB_Main* message) {
-    return message->command_status == PB_CommandStatus_OK &&
-           message->which_content == PB_Main_system_device_info_response_tag;
-}
-
 // Main states
 
 static bool expansion_wait_ready() {
