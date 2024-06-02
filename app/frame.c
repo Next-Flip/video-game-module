@@ -13,9 +13,6 @@
 static struct dvi_inst dvi0;
 static uint16_t framebuf[FRAME_WIDTH * 2];
 
-#define COLOR_BG 0xFC00
-#define COLOR_FG 0x0000
-
 #define COLOR_RED 0xF800
 #define COLOR_GREEN 0x07E0
 #define COLOR_BLUE 0x001F
@@ -163,5 +160,13 @@ void frame_parse_data(uint8_t orientation, const frame_t* frame, uint32_t timeou
 
 void frame_set_color(uint16_t bg, uint16_t fg) {
     color_bg = bg;
+    color_fg = fg;
+}
+
+void frame_set_background(uint16_t bg) {
+    color_bg = bg;
+}
+
+void frame_set_foreground(uint16_t fg) {
     color_fg = fg;
 }

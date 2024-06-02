@@ -1,3 +1,6 @@
+[submodule "assets/flipperzero-protobuf"]
+	path = assets/flipperzero-protobuf
+	url = https://github.com/Next-Flip/flipperzero-protobuf.git
 [submodule "lib/pico_dvi"]
 	path = lib/pico_dvi
 	url = https://github.com/Wren6991/PicoDVI.git
@@ -10,6 +13,3 @@
 [submodule "lib/nanopb"]
 	path = lib/nanopb
 	url = https://github.com/nanopb/nanopb.git
-[submodule "assets/flipperzero-protobuf"]
-	path = assets/flipperzero-protobuf
-	url = https://github.com/flipperdevices/flipperzero-protobuf.git

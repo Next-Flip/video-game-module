@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 
+#define COLOR_BG 0xFC00
+#define COLOR_FG 0x0000
+
 typedef struct {
     const uint8_t data[1024];
 } frame_t;
@@ -21,3 +24,5 @@ typedef enum {
 void frame_parse_data(uint8_t orientation, const frame_t* frame, uint32_t timeout_ms);
 
 void frame_set_color(uint16_t bg, uint16_t fg);
+void frame_set_background(uint16_t bg);
+void frame_set_foreground(uint16_t fg);
