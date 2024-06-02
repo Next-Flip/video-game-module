@@ -14,20 +14,11 @@ typedef union __attribute__((packed)) {
     uint32_t value : 24;
 } RgbColor;
 
-typedef union __attribute__((packed)) {
-    struct {
-        uint8_t h;
-        uint8_t s;
-        uint8_t v;
-    };
-    uint32_t value : 24;
-} HsvColor;
-
 typedef enum {
     ScreenColorModeDefault,
     ScreenColorModeCustom,
     ScreenColorModeRainbow,
-    ScreenColorModeRgbBacklight,
+    _ScreenColorModeRgbBacklight, // FW will replace this with backlight mode
     ScreenColorModeCount,
 } ScreenColorMode;
 
@@ -38,15 +29,6 @@ typedef union __attribute__((packed)) {
     };
     uint32_t value;
 } ScreenFrameColor;
-
-typedef union __attribute__((packed)) {
-    struct {
-        uint8_t b : 5;
-        uint8_t g : 6;
-        uint8_t r : 5;
-    };
-    uint16_t value;
-} Rgb565Color;
 
 typedef struct {
     TaskHandle_t thread;
