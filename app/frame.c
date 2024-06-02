@@ -13,9 +13,6 @@
 static struct dvi_inst dvi0;
 static uint16_t framebuf[FRAME_WIDTH * 2];
 
-#define COLOR_BG 0xFC00
-#define COLOR_FG 0x0000
-
 #define COLOR_RED 0xF800
 #define COLOR_GREEN 0x07E0
 #define COLOR_BLUE 0x001F

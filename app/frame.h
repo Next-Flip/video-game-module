@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 
+#define COLOR_BG 0xFC00
+#define COLOR_FG 0x0000
+
 typedef struct {
     const uint8_t data[1024];
 } frame_t;

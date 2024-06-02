@@ -439,14 +439,16 @@ static void expansion_process_screen_streaming() {
             start_rainbow_mode(&bg_state);
         } else {
             stop_rainbow_mode(&bg_state);
-            frame_set_background(rgb888_to_rgb565(bg.rgb));
+            frame_set_background(
+                bg.mode == ScreenColorModeCustom ? rgb888_to_rgb565(bg.rgb) : COLOR_BG);
         }
 
         if(fg.mode == ScreenColorModeRainbow) {
             start_rainbow_mode(&fg_state);
         } else {
             stop_rainbow_mode(&fg_state);
-            frame_set_foreground(rgb888_to_rgb565(fg.rgb));
+            frame_set_foreground(
+                fg.mode == ScreenColorModeCustom ? rgb888_to_rgb565(fg.rgb) : COLOR_FG);
         }
 
         frame_parse_data(
