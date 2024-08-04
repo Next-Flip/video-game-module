@@ -76,11 +76,17 @@ jobs:
           mv build/app/firmware.uf2 artifacts/vgm-rp2040-firmware-${SUFFIX}.uf2;
           mv build/app/firmware.elf.map artifacts/vgm-rp2040-firmware-${SUFFIX}.map;
 
-      - name: 'Upload artifacts to update server'
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: |
-          FILES=$(for CUR in $(ls artifacts/); do echo "-F files=@artifacts/$CUR"; done)
-          curl --fail -L -H "Token: ${{ secrets.INDEXER_TOKEN }}" \
-              -F "branch=${BRANCH_NAME}" \
-              ${FILES[@]} \
-              "${{ secrets.INDEXER_URL }}"/vgm-firmware/uploadfiles;
+      - name: "Upload artifacts to GitHub"
+        uses: actions/upload-artifact@v3
+        with:
+          path: |
+            artifacts/
+
+      # - name: 'Upload artifacts to update server'
+      #   if: ${{ !github.event.pull_request.head.repo.fork }}
+      #   run: |
+      #     FILES=$(for CUR in $(ls artifacts/); do echo "-F files=@artifacts/$CUR"; done)
+      #     curl --fail -L -H "Token: ${{ secrets.INDEXER_TOKEN }}" \
+      #         -F "branch=${BRANCH_NAME}" \
+      #         ${FILES[@]} \
+      #         "${{ secrets.INDEXER_URL }}"/vgm-firmware/uploadfiles;
