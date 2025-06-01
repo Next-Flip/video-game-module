@@ -63,13 +63,11 @@ jobs:
           popd;
 
       - name: 'Make artifacts directory'
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           rm -rf artifacts;
           mkdir artifacts;
 
       - name: 'Move upload files'
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           mv build/app/firmware.elf artifacts/vgm-rp2040-firmware-${SUFFIX}.elf;
           mv build/app/firmware.bin artifacts/vgm-rp2040-firmware-${SUFFIX}.bin;
@@ -77,7 +75,7 @@ jobs:
           mv build/app/firmware.elf.map artifacts/vgm-rp2040-firmware-${SUFFIX}.map;
 
       - name: "Upload artifacts to GitHub"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             artifacts/

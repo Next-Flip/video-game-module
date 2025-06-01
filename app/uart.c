@@ -23,7 +23,7 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 #define UART_INIT_BAUD_RATE (9600UL)
-#define UART_BAUD_RATE (1843200UL)
+#define UART_BAUD_RATE (921600UL)
 
 #define EXPANSION_MODULE_TIMEOUT_MS (EXPANSION_PROTOCOL_TIMEOUT_MS - 50UL)
 #define EXPANSION_MODULE_STARTUP_DELAY_MS (250UL)
@@ -34,14 +34,12 @@ static PB_Main rpc_message;
 
 // RX interrupt handler
 static void uart_on_rx() {
-    BaseType_t higher_priority_task_woken = pdFALSE;
-
     while(uart_is_readable(UART_ID)) {
-        const uint8_t ch = uart_getc(UART_ID);
-        xStreamBufferSendFromISR(stream, &ch, sizeof(ch), &higher_priority_task_woken);
+        uint8_t ch = uart_getc(UART_ID);
+        BaseType_t pxHigherPriorityTaskWoken;
+        xStreamBufferSendFromISR(stream, &ch, sizeof(ch), &pxHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
     }
-
-    portYIELD_FROM_ISR(higher_priority_task_woken);
 }
 
 // Receive frames
@@ -477,8 +475,8 @@ static void uart_task(void* unused_arg) {
     gpio_set_pulls(UART_RX_PIN, true, false);
     gpio_set_pulls(UART_TX_PIN, true, false);
 
-    // enable uart fifo
-    uart_set_fifo_enabled(UART_ID, true);
+    // disable uart fifo
+    uart_set_fifo_enabled(UART_ID, false);
 
     // config uart for 8N1 transmission
     uart_set_format(UART_ID, 8, 1, UART_PARITY_NONE);
