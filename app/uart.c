@@ -477,8 +477,8 @@ static void uart_task(void* unused_arg) {
     gpio_set_pulls(UART_RX_PIN, true, false);
     gpio_set_pulls(UART_TX_PIN, true, false);
 
-    // enable uart fifo
-    uart_set_fifo_enabled(UART_ID, true);
+    // disable uart fifo
+    uart_set_fifo_enabled(UART_ID, false);
 
     // config uart for 8N1 transmission
     uart_set_format(UART_ID, 8, 1, UART_PARITY_NONE);
